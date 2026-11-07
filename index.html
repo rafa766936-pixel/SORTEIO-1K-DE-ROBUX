@@ -1,92 +1,45 @@
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sorteio de 1K de Robux</title>
-<style>
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #10121a;
-  color: white;
-  font-family: Arial, sans-serif;
-  padding: 20px;
-}
-.card {
-  background: #1c2030;
-  width: 100%;
-  max-width: 430px;
-  padding: 30px;
-  border-radius: 18px;
-  text-align: center;
-  box-shadow: 0 10px 35px #0008;
-}
-h1 { color: #f4c542; }
-p { color: #c6cad5; }
-input {
-  width: 100%;
-  padding: 14px;
-  margin-top: 12px;
-  border: 1px solid #454b60;
-  border-radius: 9px;
-  background: #111522;
-  color: white;
-}
-.obs {
-  text-align: left;
-  font-size: 12px;
-  margin-top: 8px;
-}
-button {
-  width: 100%;
-  padding: 15px;
-  margin-top: 20px;
-  border: 0;
-  border-radius: 9px;
-  background: #f4c542;
-  font-weight: bold;
-  cursor: pointer;
-}
-#resultado { margin-top: 15px; }
-</style>
-</head>
-<body>
-<div class="card">
-  <h1>🎁 SORTEIO DE 1K DE ROBUX</h1>
-  <p>Preencha os dados para participar!</p>
-
-  <form id="cadastro">
-    <input id="nome" type="text"
-      placeholder="Nome completo" required>
-    <p class="obs">
-      OBS: O nome deverá ser completo para melhor organização.
-    </p>
-
-    <input id="nick" type="text"
-      placeholder="Nick do Roblox" required>
-
-    <button type="submit">PARTICIPAR DO SORTEIO</button>
-  </form>
-
-  <p id="resultado"></p>
-  <p style="font-size:11px">
-    Não informe sua senha ou códigos de acesso.
-    Consulte as regras e a política de privacidade do sorteio.
-  </p>
-</div>
-
-<script>
-document.getElementById("cadastro").addEventListener("submit", function(e) {
+document.getElementById("cadastro").addEventListener("submit", async function(e) {
   e.preventDefault();
-  document.getElementById("resultado").textContent =
-    "Formulário preenchido! O envio será ativado após configurar o servidor.";
+
+  const nome = document.getElementById("nome").value.trim();
+  const nick = document.getElementById("nick").value.trim();
+  const resultado = document.getElementById("resultado");
+  const botao = this.querySelector("button");
+
+  if (!nome || !nick) {
+    resultado.textContent = "Preencha todos os campos.";
+    return;
+  }
+
+  botao.disabled = true;
+  botao.textContent = "ENVIANDO...";
+
+  try {
+    const resposta = await fetch(
+      "https://sorteio-robux-avila.rafa766936.workers.dev/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ nome, nick })
+      }
+    );
+
+    const dados = await resposta.json();
+
+    if (!resposta.ok || !dados.sucesso) {
+      throw new Error(dados.erro || "Falha no cadastro");
+    }
+
+    resultado.textContent = "Cadastro enviado com sucesso!";
+    this.reset();
+
+  } catch (erro) {
+    resultado.textContent = "Não foi possível enviar. Tente novamente.";
+  } finally {
+    botao.disabled = false;
+    botao.textContent = "PARTICIPAR DO SORTEIO";
+  }
 });
-</script>
-</body>
-</html>
